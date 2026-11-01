@@ -2,51 +2,31 @@
 ;;; Commentary:
 
 ;;; Code:
-(defun src/display-startup-time ()
-  "Log start up time for Emacs."
-  (message
-   "Emacs loaded in %s with %d garbage collections."
-   (format
-    "%.2f seconds"
-    (float-time
-     (time-subtract after-init-time before-init-time)))
-   gcs-done))
 
-(add-hook 'emacs-startup-hook #'src/display-startup-time)
+;; Packages
 
 (require 'package)
-(add-to-list 'package-archives '("gnu" . "https://elpa.gnu.org/packages/"))
-(add-to-list 'package-archives '("nongnu" . "https://elpa.nongnu.org/nongnu"))
-(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/"))
-
-(when (< emacs-major-version 24)
-  ;; Backwards compatibility
-  (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/")))
-
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(package-initialize)
-
 (require 'use-package)
-(setq use-package-always-ensure t)
 
-(add-to-list 'exec-path "~/.cargo/bin")
+(setq package-archives
+      '(("gnu" . "https://elpa.gnu.org/packages/")
+	("nongnu" . "https://elpa.nongnu.org/nongnu/")
+	("melpa" . "https://melpa.org/packages/")))
 
 ;; General styling
+
 (setq-default inhibit-splash-screen t
 	      visible-bell 1
 	      display-line-numbers-type 'relative
-	      show-trailing-whitespace t)
+	      column-number-mode t)
+
+(add-hook 'font-lock-mode-hook (lambda () (setq-default show-trailing-whitespace t)))
 
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 
 '(global-display-line-numbers-mode t)
 '(column-number-mode t)
-;(setq-default auto-fill-function 'do-auto-fill)
-;(setq-default fill-column 80)
 
 ;; auto-saving
 (setq auto-save-default nil)
@@ -54,23 +34,17 @@
 (setq auto-save-visited-mode 1)
 (setq auto-save-visited-interval 1)
 
-;; store back up files
-(setq backup-directory-alist '(("." . "~/.emacs.d/backup"))
-  backup-by-copying t    ; Don't delink hardlinks
-  version-control t      ; Use version numbers on backups
-  delete-old-versions t  ; Automatically delete excess backups
-  kept-new-versions 20   ; how many of the newest versions to keep
-  kept-old-versions 5    ; and how many of the old
-  )
+(setq make-backup-files nil)
+(setq create-lockfiles nil)
 
 ;; Theme
 (use-package modus-themes
   :ensure t
   :demand t)
 
-;;(use-package ef-themes
-;;  :ensure t
-;;  :demand t)
+(use-package ef-themes
+  :ensure t
+  :demand t)
 
 ;; Add all your customizations prior to loading the themes
 (setq modus-themes-italic-constructs t
@@ -86,11 +60,6 @@
 (global-set-key [remap list-buffers] 'ibuffer)
 (global-set-key (kbd "C-,") 'duplicate-line)
 
-;; ido
-(ido-mode 1)
-(ido-everywhere 1)
-
-
 ;; Window management
 (global-set-key (kbd "M-o") 'other-window)
 (windmove-default-keybindings)
@@ -102,33 +71,39 @@
 ;; rainbow-mode
 (use-package rainbow-mode)
 
-;; Ivy
-(use-package ivy
-  :diminish
-  :bind (("C-M-s" . swiper)
-	 :map ivy-minibuffer-map
-	 ("TAB" . ivy-alt-done)
-	 ("C-l" . ivy-alt-done)
-	 ("C-j" . ivy-next-line)
-	 ("C-k" . ivy-previous-line)
-	 :map ivy-switch-buffer-map
-	 ("C-k" . ivy-previous-line)
-	 ("C-l" . ivy-done)
-	 ("C-d" . ivy-switch-buffer-kill)
-	 :map ivy-reverse-i-search-map
-	 ("C-k" . ivy-previous-line)
-	 ("C-d" . ivy-reverse-i-search-kill))
+;; buffer completion
+(use-package vertico
+  :ensure t
   :config
-  (ivy-mode 1))
+  (setq vertico-cycle t)
+  (setq vertico-resize nil)
+  (vertico-mode 1))
 
-(use-package counsel
-  :bind (("M-x" . counsel-M-x)
-	 ("C-x b" . counsel-ibuffer)
-	 ("C-x C-f" . counsel-find-file)
-	 :map minibuffer-local-map
-	 ("C-r" . 'counsel-minibuffer-history))
+(use-package marginalia
+  :ensure t
   :config
-  (setq ivy-initial-inputs-alist nil)) ;; Don't start searches with ^
+  (marginalia-mode 1))
+
+(use-package orderless
+  :ensure t
+  )
+
+(use-package consult
+  :bind (
+	 ("C-x b" . consult-buffer)
+	 ("M-g o" . consult-outline)
+	 ("M-s g" . consult-grep)
+	 ("M-s r" . consult-ripgrep)
+	 ("M-s l" . consult-line)
+	 ("M-s L" . consult-line-multi)
+	 )
+
+  :init
+
+  :config
+
+  (setq consult-preview-key nil)
+  (setq consult-narrow-key "<"))
 
 ;; Magit
 (use-package magit)
@@ -164,9 +139,6 @@
 						  '(:immediate-finish t)))))
   (apply #'org-roam-node-insert args)))
 
-;; Consult
-(use-package consult)
-
 ; Programming
 
 ;; clang-format
@@ -174,6 +146,7 @@
 (use-package clang-format
   :init
   (setq clang-format-fallback-style "gnu"))
+(setq-default c-ts-mode-indent-style 'gnu)
 
 ;; Sly
 (use-package sly
@@ -198,42 +171,19 @@
       '((c-mode . c-ts-mode)
 	(c++-mode . c++-ts-mode)
 	(csharp-mode . csharp-ts-mode)
-	(rust-mode . rust-ts-mode)
 	(bash-mode . bash-ts-mode)
 	))
 
-(setq-default lsp-clients-clangd-executable "/usr/bin/clangd")
+(use-package eglot)
 
-;; LSP
-(use-package lsp-mode
-  :ensure
-  :commands lsp
-  :custom
-  (lsp-rust-analyzer-cargo-watch-command "clippy")
-  (lsp-eldoc-render-all t)
-  (lsp-idle-delay 0.6)
-  :init
-  (setq lsp-keymap-prefix "C-c l")
-  (setq-default lsp-ui-sideline-enable nil)
-  :hook (csharp-ts-mode . lsp)
-  :hook (c-ts-mode . lsp)
-  :hook (c++-ts-mode . lsp)
-  :config
-  (setq-default lsp-enable-which-key-integration t)
-  (add-hook 'rust-ts-mode-hook 'lsp-deferred))
+(add-to-list 'eglot-server-programs
+	     '((c-ts-mode c++-ts-mode) "clangd"))
+(add-to-list 'eglot-server-programs
+	     '(csharp-ts-mode . ("/opt/omnisharp/OmniSharp" "-lsp")))
 
-;; to enable the lenses
-(add-hook 'lsp-mode-hook #'lsp-lens-mode)
-
-(add-hook 'after-init-hook 'global-company-mode)
-
-(use-package lsp-ui
-  :ensure
-  :commands lsp-ui-mode
-  :custom
-  (lsp-ui-peek-always-show t)
-  (lsp-ui-sideline-show-hover t)
-  (lsp-ui-doc-enable nil))
+(add-hook 'c-ts-mode-hook 'eglot-ensure)
+(add-hook 'c++-ts-mode-hook 'eglot-ensure)
+(add-hook 'csharp-ts-mode-hook 'eglot-ensure)
 
 ;; Compile hooks
 (add-hook 'c-ts-mode-hook
@@ -253,10 +203,6 @@
 	  (lambda ()
 	    (setq-local compile-command
 			(format "dotnet run"))))
-
-;; Rust
-(add-hook 'rust-ts-mode-hook
-          (lambda () (setq indent-tabs-mode nil)))
 
 (use-package company
   :ensure
@@ -297,6 +243,9 @@
 (setq-default TeX-parse-self t)
 (setq-default TeX-master nil)
 (setq org-format-latex-options (plist-put org-format-latex-options :scale 1.8))
+
+(use-package gptel)
+(gptel-make-openai-oauth "OpenAI-sub")
 
 (setq custom-file "~/.emacs.d/custom.el")
 

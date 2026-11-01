@@ -6,11 +6,9 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    '(annalist annotate auctex cdlatex clang-format company consult
-	      counsel dap-mode doom-themes doric-themes ef-themes evil
-	      flycheck-rust go-mode gptel inf-clojure ivy-rich lsp-ui
-	      org-roam-ui rainbow-mode reformatter request rust-mode
-	      sly treemacs-icons-dired treemacs-magit
-	      treemacs-projectile which-key xterm-color zone-select)))
+	      doric-themes ef-themes flycheck goto-chg gptel magit
+	      marginalia orderless org-roam-ui projectile rainbow-mode
+	      reformatter request sly vertico which-key xterm-color)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
