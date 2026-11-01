@@ -13,6 +13,8 @@
 	("nongnu" . "https://elpa.nongnu.org/nongnu/")
 	("melpa" . "https://melpa.org/packages/")))
 
+(setq-default use-package-always-ensure t)
+
 ;; General styling
 
 (setq-default inhibit-splash-screen t
@@ -38,13 +40,9 @@
 (setq create-lockfiles nil)
 
 ;; Theme
-(use-package modus-themes
-  :ensure t
-  :demand t)
+(use-package modus-themes)
 
-(use-package ef-themes
-  :ensure t
-  :demand t)
+(use-package ef-themes)
 
 ;; Add all your customizations prior to loading the themes
 (setq modus-themes-italic-constructs t
@@ -73,20 +71,16 @@
 
 ;; buffer completion
 (use-package vertico
-  :ensure t
   :config
   (setq vertico-cycle t)
   (setq vertico-resize nil)
   (vertico-mode 1))
 
 (use-package marginalia
-  :ensure t
   :config
   (marginalia-mode 1))
 
-(use-package orderless
-  :ensure t
-  )
+(use-package orderless)
 
 (use-package consult
   :bind (
@@ -205,7 +199,6 @@
 			(format "dotnet run"))))
 
 (use-package company
-  :ensure
   :custom
   (company-idle-delay 0.5)
   :bind
@@ -222,30 +215,30 @@
 
 ;; Projectile
 (use-package projectile
-  :ensure t
   :bind-keymap
   ("C-c p" . projectile-command-map)
   :init
   (projectile-mode +1))
 
 ;; Flycheck
-(use-package flycheck :ensure)
+(use-package flycheck)
 (global-flycheck-mode)
 
 ;; AUCTeX
-(use-package auctex
-  :ensure t
-  :defer t
-  :hook (LaTeX-mode . (lambda ()
-			(push (list 'output-pdf "Okular")
-			      TeX-view-program-selection))))
-(setq-default TeX-auto-save t)
-(setq-default TeX-parse-self t)
-(setq-default TeX-master nil)
-(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.8))
+;;(use-package auctex
+;;  :defer t
+;;  :hook (LaTeX-mode . (lambda ()
+;;			(push (list 'output-pdf "Okular")
+;;			      TeX-view-program-selection))))
+;;(setq-default TeX-auto-save t)
+;;(setq-default TeX-parse-self t)
+;;(setq-default TeX-master nil)
+;;(setq org-format-latex-options (plist-put org-format-latex-options :scale 1.8))
 
-(use-package gptel)
-(gptel-make-openai-oauth "OpenAI-sub")
+(use-package gptel
+  :config
+  (setq-default gptel-backend
+   (gptel-make-openai-oauth "OpenAI-sub")))
 
 (setq custom-file "~/.emacs.d/custom.el")
 
