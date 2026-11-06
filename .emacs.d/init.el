@@ -58,6 +58,13 @@
 (global-set-key [remap list-buffers] 'ibuffer)
 (global-set-key (kbd "C-,") 'duplicate-line)
 
+;;; multiple cursors
+(use-package multiple-cursors)
+(global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+(global-set-key (kbd "C->") 'mc/mark-next-like-this)
+(global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+(global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+
 ;; Window management
 (global-set-key (kbd "M-o") 'other-window)
 (windmove-default-keybindings)
